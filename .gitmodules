@@ -1,0 +1,12 @@
+[submodule "libs/JUCE"]
+	path = libs/JUCE
+	url = https://github.com/juce-framework/JUCE.git
+[submodule "libs/melatonin_inspector"]
+	path = libs/melatonin_inspector
+	url = https://github.com/sudara/melatonin_inspector.git
+[submodule "libs/melatonin_perfetto"]
+	path = libs/melatonin_perfetto
+	url = https://github.com/sudara/melatonin_perfetto.git
+[submodule "libs/nes_snd_emu"]
+	path = libs/nes_snd_emu
+	url = https://github.com/jamesathey/Nes_Snd_Emu.git

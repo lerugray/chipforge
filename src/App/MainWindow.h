@@ -14,7 +14,7 @@
 // MainContentComponent
 //
 // Root component hosted inside the DocumentWindow.
-// Phase 0: Toolbar at top + placeholder panel below.
+// Phase 1: Toolbar at top + QWERTY keyboard note input + placeholder panel.
 //==============================================================================
 class MainContentComponent : public juce::Component,
                               private juce::KeyListener
@@ -27,12 +27,16 @@ public:
     void paint(juce::Graphics&) override;
 
     bool keyPressed(const juce::KeyPress& key, juce::Component* originatingComponent) override;
+    bool keyStateChanged(bool isKeyDown, juce::Component* originatingComponent) override;
 
 private:
     TransportState& transportState;
     AudioEngine&    audioEngine;
 
     Toolbar toolbar;
+
+    int keyboardOctave { 4 };   // default octave (C4 = MIDI 60)
+    int activeKeyCode  { -1 };  // key code of the currently held note key
 
 #if MELATONIN_INSPECTOR
     std::unique_ptr<melatonin::Inspector> inspector;

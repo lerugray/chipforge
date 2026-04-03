@@ -64,9 +64,22 @@ target_sources(ChipForge PRIVATE
     src/Engine/TransportState.cpp
     src/UI/LookAndFeel/ChipForgeLookAndFeel.cpp
     src/UI/Shared/Toolbar.cpp
+    src/Synths/NES2A03/NES2A03Synth.cpp
+    # nes_snd_emu — compiled directly (no DLL; DLLEXPORT expands to nothing without NES_SND_DYNAMIC)
+    libs/nes_snd_emu/nes_apu/Blip_Buffer.cpp
+    libs/nes_snd_emu/nes_apu/Nes_Apu.cpp
+    libs/nes_snd_emu/nes_apu/Nes_Oscs.cpp
 )
 
-target_include_directories(ChipForge PRIVATE src)
+target_include_directories(ChipForge PRIVATE
+    src
+    libs/nes_snd_emu   # exposes nes_apu/Nes_Apu.h, nes_apu/Blip_Buffer.h etc.
+)
+
+# NOMINMAX: avoid Windows min/max macro conflicts (needed by nes_snd_emu on MSVC)
+if(MSVC)
+    target_compile_definitions(ChipForge PRIVATE NOMINMAX)
+endif()
 
 target_compile_definitions(ChipForge PRIVATE
     JUCE_WEB_BROWSER=0

@@ -2,14 +2,15 @@
 
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "TransportState.h"
+#include "Synths/NES2A03/NES2A03Synth.h"
 
 //==============================================================================
 // AudioEngine
 //
 // Owns the JUCE audio device and is the sole entry point for audio I/O.
-// Phase 0: outputs a 440 Hz sine wave when the transport is playing.
+// Phase 1: routes audio through the NES 2A03 synth.
 //
-// AUDIO THREAD RULES (enforced here and in all future processBlock calls):
+// AUDIO THREAD RULES:
 //   - No memory allocation (malloc/new/std::vector resize)
 //   - No mutex locking
 //   - No file I/O or DBG() calls
@@ -26,17 +27,14 @@ public:
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
 
+    // UI thread — forward keyboard events to the NES synth
+    void noteOn(int midiNote) { nesSynth.noteOn(midiNote); }
+    void noteOff()            { nesSynth.noteOff(); }
+    int  getActiveNote() const { return nesSynth.getActiveNote(); }
+
 private:
     TransportState& transportState;
-
-    double currentSampleRate  = 44100.0;
-    double currentAngle       = 0.0;
-    double angleDelta         = 0.0;
-
-    static constexpr double testToneFrequency = 440.0;
-    static constexpr float  testToneAmplitude = 0.25f;  // -12 dBFS — not too loud
-
-    void updateAngleDelta();
+    NES2A03Synth    nesSynth;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioEngine)
 };

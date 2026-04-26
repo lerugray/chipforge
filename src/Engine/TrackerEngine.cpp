@@ -24,7 +24,9 @@ void TrackerEngine::reset() noexcept
 
 void TrackerEngine::setPattern(const Pattern& patternToUse)
 {
-    pattern = patternToUse;
+    if (!pattern.copyCellsFrom(patternToUse))
+        pattern = patternToUse;
+
     if (currentRow >= pattern.getNumRows())
         currentRow = 0;
 }

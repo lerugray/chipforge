@@ -28,6 +28,7 @@ public:
 
     const PatternCell& getCell(int row, int track) const noexcept;
     bool setCell(int row, int track, PatternCell cell);
+    bool copyCellsFrom(const Pattern& other) noexcept;
 
     void clear();
 

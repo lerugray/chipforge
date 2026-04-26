@@ -35,6 +35,15 @@ bool Pattern::setCell(int row, int track, PatternCell cell)
     return true;
 }
 
+bool Pattern::copyCellsFrom(const Pattern& other) noexcept
+{
+    if (numRows != other.numRows || numTracks != other.numTracks)
+        return false;
+
+    std::copy(other.cells.begin(), other.cells.end(), cells.begin());
+    return true;
+}
+
 void Pattern::clear()
 {
     std::fill(cells.begin(), cells.end(), PatternCell::makeEmpty());

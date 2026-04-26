@@ -2,13 +2,16 @@
 
 #include "UI/LookAndFeel/ChipForgeLookAndFeel.h"
 
-TrackerView::TrackerView(const Pattern& patternToShow)
-    : pattern(patternToShow)
+TrackerView::TrackerView(const PatternEditorModel& editorToShow, const AudioEngine& audioEngineToShow)
+    : editor(editorToShow), audioEngine(audioEngineToShow)
 {
 }
 
 void TrackerView::paint(juce::Graphics& g)
 {
+    const auto& pattern = editor.getPattern();
+    const int playbackRow = audioEngine.getPlaybackRow();
+
     g.fillAll(juce::Colour(ChipForgeLookAndFeel::ColourBackground));
 
     auto area = getLocalBounds().reduced(24, 18);
@@ -18,8 +21,14 @@ void TrackerView::paint(juce::Graphics& g)
 
     g.setFont(13.0f);
     g.setColour(juce::Colour(ChipForgeLookAndFeel::ColourTextSecondary));
-    g.drawText("Play starts the demo pattern; QWERTY keys still audition the NES pulse synth.",
+    g.drawText("Arrows move | QWERTY writes notes | Enter writes note-off | Delete clears | Space plays",
                area.removeFromTop(24),
+               juce::Justification::centredLeft);
+    g.drawText("Row " + juce::String(editor.getCursorRow())
+                   + "  Track " + juce::String(editor.getCursorTrack() + 1)
+                   + "  Octave " + juce::String(editor.getOctave())
+                   + "  Step " + juce::String(editor.getEditStep()),
+               area.removeFromTop(22),
                juce::Justification::centredLeft);
 
     area.removeFromTop(10);
@@ -51,7 +60,9 @@ void TrackerView::paint(juce::Graphics& g)
             ? juce::Colour(ChipForgeLookAndFeel::ColourPanel).brighter(0.08f)
             : juce::Colour(ChipForgeLookAndFeel::ColourPanel);
 
-        g.setColour(rowColour);
+        g.setColour(row == playbackRow
+            ? juce::Colour(ChipForgeLookAndFeel::ColourNoteOn).withAlpha(0.18f)
+            : rowColour);
         g.fillRect(rowArea);
 
         g.setColour(juce::Colour(ChipForgeLookAndFeel::ColourTextSecondary));
@@ -63,6 +74,13 @@ void TrackerView::paint(juce::Graphics& g)
         {
             auto cellArea = rowArea.removeFromLeft(trackWidth).reduced(2);
             const auto& cell = pattern.getCell(row, track);
+            const bool isCursor = row == editor.getCursorRow() && track == editor.getCursorTrack();
+
+            if (isCursor)
+            {
+                g.setColour(juce::Colour(ChipForgeLookAndFeel::ColourHighlight));
+                g.drawRect(cellArea.expanded(1), 2);
+            }
 
             g.setColour(cell.hasNote() || cell.isNoteOff()
                 ? juce::Colour(ChipForgeLookAndFeel::ColourNoteOn)

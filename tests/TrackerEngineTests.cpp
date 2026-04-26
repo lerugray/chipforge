@@ -127,6 +127,26 @@ public:
             return;
         expectEquals(events.front().sampleOffset, engine.getSamplesPerRow());
         expectEquals(events.front().row, 0);
+
+        beginTest("current row advances through empty rows");
+        Pattern sparse(4, 1);
+        sparse.setCell(0, 0, PatternCell::makeNote(60));
+        engine.setPattern(sparse);
+        engine.reset();
+        transport.play();
+
+        collectEvents(engine, 1, transport, events);
+        if (!hasEventCount(events, 1))
+            return;
+        expectEquals(engine.getCurrentRow(), 0);
+
+        collectEvents(engine, engine.getSamplesPerRow() - 1, transport, events);
+        expect(events.empty());
+        expectEquals(engine.getCurrentRow(), 1);
+
+        collectEvents(engine, engine.getSamplesPerRow(), transport, events);
+        expect(events.empty());
+        expectEquals(engine.getCurrentRow(), 2);
     }
 };
 

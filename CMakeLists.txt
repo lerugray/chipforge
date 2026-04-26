@@ -62,6 +62,7 @@ target_sources(ChipForge PRIVATE
     src/App/MainWindow.cpp
     src/Data/Pattern.cpp
     src/Data/PatternCell.cpp
+    src/Data/PatternEditorModel.cpp
     src/Engine/AudioEngine.cpp
     src/Engine/TrackerEngine.cpp
     src/Engine/TransportState.cpp
@@ -123,11 +124,13 @@ juce_add_console_app(chipforge_tests
 target_sources(chipforge_tests PRIVATE
     tests/Main.cpp
     tests/NES2A03SynthTests.cpp
+    tests/PatternEditorModelTests.cpp
     tests/PatternTests.cpp
     tests/TrackerEngineTests.cpp
     tests/TransportStateTests.cpp
     src/Data/Pattern.cpp
     src/Data/PatternCell.cpp
+    src/Data/PatternEditorModel.cpp
     src/Engine/TrackerEngine.cpp
     src/Engine/TransportState.cpp
     src/Synths/NES2A03/NES2A03Synth.cpp

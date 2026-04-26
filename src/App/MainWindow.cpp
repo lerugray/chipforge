@@ -34,31 +34,31 @@ static int qwertyToSemitone(int kc)
 //==============================================================================
 
 MainContentComponent::MainContentComponent(TransportState& transport, AudioEngine& audio)
-    : transportState(transport), audioEngine(audio), trackerView(audio.getPattern())
+    : transportState(transport), audioEngine(audio), trackerView(patternEditor, audioEngine)
 {
     addAndMakeVisible(toolbar);
     addAndMakeVisible(trackerView);
 
     toolbar.onPlayClicked = [this]
     {
-        transportState.play();
-        toolbar.setIsPlaying(true);
+        playEditedPattern();
     };
 
     toolbar.onStopClicked = [this]
     {
-        transportState.stop();
-        toolbar.setIsPlaying(false);
+        stopTransport();
     };
 
     addKeyListener(this);
     setWantsKeyboardFocus(true);
+    startTimerHz(20);
 
     setSize(1280, 800);
 }
 
 MainContentComponent::~MainContentComponent()
 {
+    stopTimer();
     removeKeyListener(this);
 }
 
@@ -97,14 +97,70 @@ bool MainContentComponent::keyPressed(const juce::KeyPress& key,
     // Octave shift
     if (kc == '+' || kc == '=')
     {
-        keyboardOctave = juce::jmin(keyboardOctave + 1, 8);
-        repaint();
+        patternEditor.adjustOctave(1);
+        repaintTracker();
         return true;
     }
     if (kc == '-')
     {
-        keyboardOctave = juce::jmax(keyboardOctave - 1, 0);
-        repaint();
+        patternEditor.adjustOctave(-1);
+        repaintTracker();
+        return true;
+    }
+
+    if (key.isKeyCode(juce::KeyPress::spaceKey))
+    {
+        if (spaceKeyDown)
+            return true;
+
+        spaceKeyDown = true;
+
+        if (transportState.getIsPlaying())
+            stopTransport();
+        else
+            playEditedPattern();
+
+        return true;
+    }
+
+    if (key.isKeyCode(juce::KeyPress::leftKey))
+    {
+        patternEditor.moveCursor(0, -1);
+        repaintTracker();
+        return true;
+    }
+    if (key.isKeyCode(juce::KeyPress::rightKey))
+    {
+        patternEditor.moveCursor(0, 1);
+        repaintTracker();
+        return true;
+    }
+    if (key.isKeyCode(juce::KeyPress::upKey))
+    {
+        patternEditor.moveCursor(-1, 0);
+        repaintTracker();
+        return true;
+    }
+    if (key.isKeyCode(juce::KeyPress::downKey))
+    {
+        patternEditor.moveCursor(1, 0);
+        repaintTracker();
+        return true;
+    }
+
+    if (key.isKeyCode(juce::KeyPress::deleteKey) || key.isKeyCode(juce::KeyPress::backspaceKey))
+    {
+        stopTransportForEdit();
+        patternEditor.clearCurrentCell();
+        repaintTracker();
+        return true;
+    }
+
+    if (key.isKeyCode(juce::KeyPress::returnKey))
+    {
+        stopTransportForEdit();
+        patternEditor.insertNoteOff();
+        repaintTracker();
         return true;
     }
 
@@ -115,13 +171,13 @@ bool MainContentComponent::keyPressed(const juce::KeyPress& key,
         if (kc == activeKeyCode)
             return true;  // key repeat, note already playing
 
-        const int octave   = keyboardOctave + (semitone >= 12 ? 1 : 0);
-        const int midiNote = (octave + 1) * 12 + (semitone % 12);
-
-        if (midiNote >= 33 && midiNote <= 112)
+        stopTransportForEdit();
+        const auto midiNote = patternEditor.insertNoteFromSemitone(semitone);
+        if (midiNote.has_value())
         {
-            audioEngine.noteOn(midiNote);
+            audioEngine.noteOn(*midiNote);
             activeKeyCode = kc;
+            repaintTracker();
         }
         return true;
     }
@@ -129,9 +185,59 @@ bool MainContentComponent::keyPressed(const juce::KeyPress& key,
     return false;
 }
 
+void MainContentComponent::playEditedPattern()
+{
+    transportState.stop();
+    stopAuditionNote();
+
+    if (!audioEngine.loadPatternForPlayback(patternEditor.getPattern()))
+    {
+        toolbar.setIsPlaying(false);
+        return;
+    }
+
+    transportState.play();
+    toolbar.setIsPlaying(true);
+}
+
+void MainContentComponent::stopTransport()
+{
+    transportState.stop();
+    toolbar.setIsPlaying(false);
+}
+
+void MainContentComponent::stopTransportForEdit()
+{
+    if (transportState.getIsPlaying())
+        stopTransport();
+}
+
+void MainContentComponent::stopAuditionNote()
+{
+    if (activeKeyCode >= 0)
+    {
+        audioEngine.noteOff();
+        activeKeyCode = -1;
+    }
+}
+
+void MainContentComponent::repaintTracker()
+{
+    trackerView.repaint();
+}
+
+void MainContentComponent::timerCallback()
+{
+    if (transportState.getIsPlaying())
+        repaintTracker();
+}
+
 bool MainContentComponent::keyStateChanged(bool /*isKeyDown*/,
                                             juce::Component* /*originatingComponent*/)
 {
+    if (spaceKeyDown && !juce::KeyPress::isKeyCurrentlyDown(juce::KeyPress::spaceKey))
+        spaceKeyDown = false;
+
     // If the held key is no longer down, release the note.
     if (activeKeyCode >= 0 && !juce::KeyPress::isKeyCurrentlyDown(activeKeyCode))
     {

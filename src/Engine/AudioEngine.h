@@ -1,7 +1,9 @@
 #pragma once
 
 #include <juce_audio_utils/juce_audio_utils.h>
+
 #include "TransportState.h"
+#include "TrackerEngine.h"
 #include "Synths/NES2A03/NES2A03Synth.h"
 
 //==============================================================================
@@ -31,10 +33,18 @@ public:
     void noteOn(int midiNote) { nesSynth.noteOn(midiNote); }
     void noteOff()            { nesSynth.noteOff(); }
     int  getActiveNote() const { return nesSynth.getActiveNote(); }
+    const Pattern& getPattern() const noexcept { return trackerPattern; }
 
 private:
     TransportState& transportState;
+    Pattern          trackerPattern;
+    TrackerEngine    trackerEngine;
     NES2A03Synth    nesSynth;
+    bool sequencerWasPlaying { false };
+
+    void renderSynthSlice(const juce::AudioSourceChannelInfo& bufferToFill,
+                          int relativeStartSample,
+                          int numSamples);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioEngine)
 };

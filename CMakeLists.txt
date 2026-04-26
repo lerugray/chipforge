@@ -60,10 +60,14 @@ target_sources(ChipForge PRIVATE
     src/main.cpp
     src/App/ChipForgeApp.cpp
     src/App/MainWindow.cpp
+    src/Data/Pattern.cpp
+    src/Data/PatternCell.cpp
     src/Engine/AudioEngine.cpp
+    src/Engine/TrackerEngine.cpp
     src/Engine/TransportState.cpp
     src/UI/LookAndFeel/ChipForgeLookAndFeel.cpp
     src/UI/Shared/Toolbar.cpp
+    src/UI/TrackerView/TrackerView.cpp
     src/Synths/NES2A03/NES2A03Synth.cpp
     # nes_snd_emu — compiled directly (no DLL; DLLEXPORT expands to nothing without NES_SND_DYNAMIC)
     libs/nes_snd_emu/nes_apu/Blip_Buffer.cpp
@@ -104,3 +108,52 @@ if(CHIPFORGE_ENABLE_PERFETTO)
     target_link_libraries(ChipForge PRIVATE MelatoninPerfetto)
     target_compile_definitions(ChipForge PRIVATE PERFETTO=1)
 endif()
+
+# ============================================================
+# Tests
+# ============================================================
+enable_testing()
+
+juce_add_console_app(chipforge_tests
+    PRODUCT_NAME "ChipForge Tests"
+    COMPANY_NAME "ChipForge"
+    VERSION "0.1.0"
+)
+
+target_sources(chipforge_tests PRIVATE
+    tests/Main.cpp
+    tests/NES2A03SynthTests.cpp
+    tests/PatternTests.cpp
+    tests/TrackerEngineTests.cpp
+    tests/TransportStateTests.cpp
+    src/Data/Pattern.cpp
+    src/Data/PatternCell.cpp
+    src/Engine/TrackerEngine.cpp
+    src/Engine/TransportState.cpp
+    src/Synths/NES2A03/NES2A03Synth.cpp
+    libs/nes_snd_emu/nes_apu/Blip_Buffer.cpp
+    libs/nes_snd_emu/nes_apu/Nes_Apu.cpp
+    libs/nes_snd_emu/nes_apu/Nes_Oscs.cpp
+)
+
+target_include_directories(chipforge_tests PRIVATE
+    src
+    libs/nes_snd_emu
+)
+
+if(MSVC)
+    target_compile_definitions(chipforge_tests PRIVATE NOMINMAX)
+endif()
+
+target_compile_definitions(chipforge_tests PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+)
+
+target_link_libraries(chipforge_tests PRIVATE
+    juce::juce_audio_basics
+    juce::juce_core
+    juce::juce_recommended_config_flags
+)
+
+add_test(NAME chipforge_tests COMMAND chipforge_tests)

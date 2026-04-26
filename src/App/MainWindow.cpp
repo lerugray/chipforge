@@ -34,9 +34,10 @@ static int qwertyToSemitone(int kc)
 //==============================================================================
 
 MainContentComponent::MainContentComponent(TransportState& transport, AudioEngine& audio)
-    : transportState(transport), audioEngine(audio)
+    : transportState(transport), audioEngine(audio), trackerView(audio.getPattern())
 {
     addAndMakeVisible(toolbar);
+    addAndMakeVisible(trackerView);
 
     toolbar.onPlayClicked = [this]
     {
@@ -65,23 +66,12 @@ void MainContentComponent::resized()
 {
     auto area = getLocalBounds();
     toolbar.setBounds(area.removeFromTop(Toolbar::Height));
+    trackerView.setBounds(area);
 }
 
 void MainContentComponent::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(ChipForgeLookAndFeel::ColourBackground));
-
-    auto placeholderArea = getLocalBounds().withTrimmedTop(Toolbar::Height);
-    g.setColour(juce::Colour(ChipForgeLookAndFeel::ColourTextSecondary));
-    g.setFont(16.0f);
-
-    juce::String hint;
-    hint << "CHIPFORGE v0.1 :: PHASE 1\n\n"
-         << "KEYBOARD MODE  |  Octave: " << keyboardOctave << "  |  +/- to change octave\n\n"
-         << "Z S X D C  V G B H N J M   (lower row: C to B)\n"
-         << "Q 2 W 3 E  R 5 T 6 Y 7 U   (upper row: C to B, octave+1)";
-
-    g.drawFittedText(hint, placeholderArea, juce::Justification::centred, 6);
 }
 
 bool MainContentComponent::keyPressed(const juce::KeyPress& key,

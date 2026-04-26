@@ -5,6 +5,7 @@
 #include "Engine/TransportState.h"
 #include "UI/LookAndFeel/ChipForgeLookAndFeel.h"
 #include "UI/Shared/Toolbar.h"
+#include "UI/TrackerView/TrackerView.h"
 
 #if MELATONIN_INSPECTOR
   #include "melatonin_inspector/melatonin_inspector.h"
@@ -34,6 +35,7 @@ private:
     AudioEngine&    audioEngine;
 
     Toolbar toolbar;
+    TrackerView trackerView;
 
     int keyboardOctave { 4 };   // default octave (C4 = MIDI 60)
     int activeKeyCode  { -1 };  // key code of the currently held note key

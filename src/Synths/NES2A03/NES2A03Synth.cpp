@@ -79,14 +79,20 @@ void NES2A03Synth::renderBlock(const juce::AudioSourceChannelInfo& bufferToFill)
         applyNoteOn(note);
 
     const int samplesNeeded = bufferToFill.numSamples;
+    if (samplesNeeded > static_cast<int>(tempBuffer.size()))
+    {
+        bufferToFill.clearActiveBufferRegion();
+        return;
+    }
 
-    // Generate NES frames until we have enough samples in the Blip_Buffer
+    // Generate only enough APU clocks for this slice so tracker events applied
+    // between slices are not delayed behind pre-rendered Blip_Buffer samples.
     while (blipBuf.samples_avail() < samplesNeeded)
     {
-        apu.end_frame(frameLength);
-        blipBuf.end_frame(frameLength);
-        frameLength ^= 1;   // alternate 29780/29781 for NTSC timing accuracy
-        apuTime = 0;        // reset register write clock for next frame
+        const int clocksNeeded = blipBuf.count_clocks(samplesNeeded);
+        apu.end_frame(clocksNeeded);
+        blipBuf.end_frame(clocksNeeded);
+        apuTime = 0;
     }
 
     // Read exactly samplesNeeded int16 samples, convert to float, write stereo

@@ -51,3 +51,7 @@ desktop.ini
 # Keep placeholder dirs
 !libs/.gitkeep
 !tests/.gitkeep
+
+# Private state — junction to ../generalstaff-private/state/chipforge/.
+# Tracked in the private repo, never in this public clone.
+state/

@@ -51,3 +51,6 @@ desktop.ini
 # Keep placeholder dirs
 !libs/.gitkeep
 !tests/.gitkeep
+
+# GS state mirror junction (canonical state in generalstaff-private/)
+state/

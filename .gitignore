@@ -1,5 +1,6 @@
 # Build output
 build/
+build-*/
 out/
 cmake-build-*/
 
@@ -52,5 +53,6 @@ desktop.ini
 !libs/.gitkeep
 !tests/.gitkeep
 
-# GS state mirror junction (canonical state in generalstaff-private/)
+# Private state — junction to ../generalstaff-private/state/chipforge/.
+# Canonical state lives in the private repo; never tracked here.
 state/

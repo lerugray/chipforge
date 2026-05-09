@@ -1,0 +1,57 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 22, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default (MSVC x64)",
+      "description": "Visual Studio 2022 generator, x64, Debug+Release configurations",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
+      }
+    },
+    {
+      "name": "tests",
+      "displayName": "Tests (MSVC x64, BUILD_TESTING=ON)",
+      "description": "Same as default but with BUILD_TESTING=ON to include the gtest-based tests/ target once vcpkg is wired in",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build-tests",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default-debug",
+      "displayName": "Build Debug",
+      "configurePreset": "default",
+      "configuration": "Debug"
+    },
+    {
+      "name": "tests-debug",
+      "displayName": "Build Tests Debug",
+      "configurePreset": "tests",
+      "configuration": "Debug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "displayName": "Run tests (Debug)",
+      "configurePreset": "default",
+      "configuration": "Debug"
+    },
+    {
+      "name": "tests",
+      "displayName": "Run tests (tests preset, Debug)",
+      "configurePreset": "tests",
+      "configuration": "Debug"
+    }
+  ]
+}
